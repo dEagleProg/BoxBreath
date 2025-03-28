@@ -301,6 +301,10 @@ const VolumeSlider = styled.input`
   border-radius: 2px;
   outline: none;
 
+  @media (max-width: 480px) {
+    display: none;
+  }
+
   &::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 12px;
@@ -326,21 +330,6 @@ const VolumeSlider = styled.input`
 
     &:hover {
       transform: scale(1.2);
-    }
-  }
-
-  @media (max-width: 480px) {
-    width: 60px;
-    height: 3px;
-
-    &::-webkit-slider-thumb {
-      width: 10px;
-      height: 10px;
-    }
-
-    &::-moz-range-thumb {
-      width: 10px;
-      height: 10px;
     }
   }
 `;
@@ -398,6 +387,7 @@ function App() {
             clearInterval(fadeOutInterval);
             if (audioRef.current) {
               audioRef.current.pause();
+              audioRef.current.currentTime = 0;
             }
           }
         }, 100);
@@ -460,6 +450,10 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
