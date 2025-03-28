@@ -74,7 +74,7 @@ const BreathBox = styled.div<{ isAnimating: boolean }>`
   box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
 
   @media (max-width: 480px) {
-    margin: 3rem;
+    margin: 2rem;
   }
 `;
 
@@ -214,6 +214,7 @@ const Button = styled.button`
   @media (max-width: 480px) {
     padding: 0.8rem 1.6rem;
     font-size: 1rem;
+    margin: 0.5rem;
   }
 `;
 
