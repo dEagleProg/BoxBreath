@@ -415,6 +415,26 @@ function App() {
     }
   };
 
+  const toggleBreathing = () => {
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+    if (preparationStage === 'initial') {
+      setPreparationStage('preparing');
+      setTimer(PHASE_DURATION);
+      setCurrentPhase(0);
+      setKey(0);
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setPreparationStage('initial');
+      setIsRunning(false);
+      setCountdownNumber(3);
+    }
+  };
+
   useEffect(() => {
     if (preparationStage === 'countdown' && hasUserInteracted) {
       if (audioRef.current) {
@@ -498,22 +518,6 @@ function App() {
       }
     };
   }, [preparationStage]);
-
-  const toggleBreathing = () => {
-    if (!hasUserInteracted) {
-      setHasUserInteracted(true);
-    }
-    if (preparationStage === 'initial') {
-      setPreparationStage('preparing');
-      setTimer(PHASE_DURATION);
-      setCurrentPhase(0);
-      setKey(0);
-    } else {
-      setPreparationStage('initial');
-      setIsRunning(false);
-      setCountdownNumber(3);
-    }
-  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
