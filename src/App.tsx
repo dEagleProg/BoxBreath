@@ -360,6 +360,7 @@ function App() {
     if (preparationStage === 'running' && hasUserInteracted) {
       if (audioRef.current) {
         audioRef.current.volume = 0;
+        audioRef.current.currentTime = 0;
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
@@ -378,7 +379,7 @@ function App() {
           });
         }
       }
-    } else {
+    } else if (preparationStage !== 'countdown') {
       if (audioRef.current) {
         const fadeOutInterval = setInterval(() => {
           if (audioRef.current && audioRef.current.volume > 0) {
@@ -450,10 +451,6 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
