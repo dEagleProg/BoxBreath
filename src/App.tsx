@@ -178,6 +178,20 @@ const Timer = styled.div`
   animation: ${fadeIn} 0.3s ease-in;
 `;
 
+const StartText = styled.div`
+  cursor: pointer;
+  transition: transform 0.2s;
+  user-select: none;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
 const Button = styled.button`
   padding: 1rem 2rem;
   font-size: 1.2rem;
@@ -334,6 +348,23 @@ const VolumeSlider = styled.input`
   }
 `;
 
+const FullscreenHint = styled.div`
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+  text-align: center;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1000;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
+`;
+
 function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentPhase, setCurrentPhase] = useState(0);
@@ -345,7 +376,35 @@ function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [showFullscreenHint, setShowFullscreenHint] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = () => {
+    if (containerRef.current) {
+      if (!document.fullscreenElement) {
+        containerRef.current.requestFullscreen().catch(err => {
+          console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+      setShowFullscreenHint(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key === ' ') {
+        toggleBreathing();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [preparationStage]);
 
   const handleContainerClick = () => {
     if (!hasUserInteracted && audioRef.current) {
@@ -379,7 +438,7 @@ function App() {
       if (audioRef.current) {
         const fadeOutInterval = setInterval(() => {
           if (audioRef.current && audioRef.current.volume > 0) {
-            audioRef.current.volume = Math.max(audioRef.current.volume - 0.1, 0);
+            audioRef.current.volume = Math.max(audioRef.current.volume - (volume / 30), 0);
           } else {
             clearInterval(fadeOutInterval);
             if (audioRef.current) {
@@ -447,10 +506,6 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
@@ -472,10 +527,10 @@ function App() {
   const renderTimer = () => {
     if (preparationStage === 'initial') {
       return (
-        <>
+        <StartText onClick={toggleBreathing}>
           <div>Press</div>
           <div>Start</div>
-        </>
+        </StartText>
       );
     }
     if (preparationStage === 'preparing') {
@@ -488,7 +543,7 @@ function App() {
   };
 
   return (
-    <AppContainer onClick={handleContainerClick}>
+    <AppContainer ref={containerRef} onClick={handleContainerClick}>
       <audio
         ref={audioRef}
         loop
@@ -496,6 +551,11 @@ function App() {
         preload="auto"
         playsInline
       />
+      {showFullscreenHint && !document.fullscreenElement && (
+        <FullscreenHint>
+          Press F for fullscreen
+        </FullscreenHint>
+      )}
       <AudioControls>
         <AudioControl onClick={toggleMute} type="button">
           {isMuted ? (
@@ -525,9 +585,11 @@ function App() {
         {isRunning && <Dot key={key} phase={currentPhase} />}
         <Timer>{renderTimer()}</Timer>
       </BreathBox>
-      <Button onClick={toggleBreathing}>
-        {preparationStage !== 'initial' ? 'Stop' : 'Start'}
-      </Button>
+      {preparationStage !== 'initial' && (
+        <Button onClick={toggleBreathing}>
+          Stop
+        </Button>
+      )}
       <Footer>
         <div>Made by dEagle</div>
         <GitHubLink 
