@@ -215,6 +215,7 @@ const Button = styled.button`
     padding: 0.8rem 1.6rem;
     font-size: 1rem;
     margin: 0.5rem;
+    transform: translateY(1rem);
   }
 `;
 
@@ -233,8 +234,9 @@ const Footer = styled.footer`
 
   @media (max-width: 480px) {
     font-size: 0.7rem;
-    bottom: 0.5rem;
+    bottom: 1rem;
     right: 0.5rem;
+    transform: translateY(-1rem);
   }
 `;
 
