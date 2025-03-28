@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const AppContainer = styled.div`
@@ -208,14 +208,18 @@ const PHASE_DURATION = 4;
 const Footer = styled.footer`
   position: fixed;
   bottom: 1rem;
-  left: 0;
-  right: 0;
+  right: 1rem;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   color: white;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+    bottom: 0.5rem;
+    right: 0.5rem;
+  }
 `;
 
 const GitHubLink = styled.a`
@@ -223,7 +227,7 @@ const GitHubLink = styled.a`
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   opacity: 0.7;
   transition: opacity 0.3s ease;
 
@@ -232,8 +236,111 @@ const GitHubLink = styled.a`
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
+
+    @media (max-width: 480px) {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+const AudioControls = styled.div`
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+
+  @media (max-width: 480px) {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.3rem;
+    gap: 0.3rem;
+  }
+`;
+
+const AudioControl = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 0.3rem;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+
+    @media (max-width: 480px) {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
+
+const VolumeSlider = styled.input`
+  width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 60px;
+    height: 3px;
+
+    &::-webkit-slider-thumb {
+      width: 10px;
+      height: 10px;
+    }
+
+    &::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+    }
   }
 `;
 
@@ -245,12 +352,60 @@ function App() {
   const [preparationStage, setPreparationStage] = useState<'initial' | 'preparing' | 'countdown' | 'running'>('initial');
   const [preparationKey, setPreparationKey] = useState(0);
   const [countdownNumber, setCountdownNumber] = useState(3);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (preparationStage === 'running') {
+      if (audioRef.current) {
+        audioRef.current.volume = 0;
+        audioRef.current.currentTime = 0;
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            if (audioRef.current) {
+              audioRef.current.volume = 0;
+              const fadeInInterval = setInterval(() => {
+                if (audioRef.current && audioRef.current.volume < volume) {
+                  audioRef.current.volume = Math.min(audioRef.current.volume + 0.1, volume);
+                } else {
+                  clearInterval(fadeInInterval);
+                }
+              }, 100);
+            }
+          }).catch(error => {
+            console.log("Audio play failed:", error);
+          });
+        }
+      }
+    } else {
+      if (audioRef.current) {
+        const fadeOutInterval = setInterval(() => {
+          if (audioRef.current && audioRef.current.volume > 0) {
+            audioRef.current.volume = Math.max(audioRef.current.volume - 0.1, 0);
+          } else {
+            clearInterval(fadeOutInterval);
+            if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+            }
+          }
+        }, 100);
+      }
+    }
+  }, [preparationStage]);
+
+  useEffect(() => {
+    if (audioRef.current && preparationStage === 'running') {
+      audioRef.current.volume = volume;
+    }
+  }, [volume, preparationStage]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (preparationStage === 'preparing') {
-      // Show preparation text for 3 seconds
       setTimeout(() => {
         setPreparationStage('countdown');
       }, 3000);
@@ -299,6 +454,18 @@ function App() {
     }
   };
 
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+  };
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   const renderTimer = () => {
     if (preparationStage === 'initial') {
       return (
@@ -319,6 +486,32 @@ function App() {
 
   return (
     <AppContainer>
+      <audio
+        ref={audioRef}
+        loop
+        src="/ambient.mp3"
+      />
+      <AudioControls>
+        <AudioControl onClick={toggleMute} type="button">
+          {isMuted ? (
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+          )}
+        </AudioControl>
+        <VolumeSlider
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={handleVolumeChange}
+        />
+      </AudioControls>
       <BreathBox isAnimating={isRunning}>
         <SideText position="top" active={isRunning && currentPhase === 0}>Inhale</SideText>
         <SideText position="right" active={isRunning && currentPhase === 1}>Hold</SideText>
