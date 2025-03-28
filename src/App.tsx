@@ -275,6 +275,8 @@ const AudioControls = styled.div`
   padding: 0.5rem;
   border-radius: 20px;
   backdrop-filter: blur(5px);
+  transition: width 0.3s ease;
+  width: auto;
 
   @media (max-width: 480px) {
     top: 0.5rem;
@@ -311,12 +313,19 @@ const AudioControl = styled.button`
 `;
 
 const VolumeSlider = styled.input`
-  width: 80px;
+  width: 0;
   height: 4px;
   -webkit-appearance: none;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   outline: none;
+  transition: all 0.3s ease;
+  opacity: 0;
+
+  ${AudioControls}:hover & {
+    width: 80px;
+    opacity: 1;
+  }
 
   @media (max-width: 480px) {
     display: none;
@@ -425,10 +434,6 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
