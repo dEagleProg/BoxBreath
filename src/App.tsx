@@ -12,14 +12,6 @@ const AppContainer = styled.div`
   font-family: 'Arial', sans-serif;
   padding: 1rem;
   touch-action: manipulation;
-  position: relative;
-
-  @media (max-width: 480px) {
-    padding: 0;
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
-  }
 `;
 
 const moveTopToRight = keyframes`
@@ -82,13 +74,7 @@ const BreathBox = styled.div<{ isAnimating: boolean }>`
   box-shadow: 0 0 20px rgba(255, 105, 180, 0.3);
 
   @media (max-width: 480px) {
-    margin: 0;
-    width: 85vw;
-    height: 85vw;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin: 3rem;
   }
 `;
 
@@ -228,10 +214,6 @@ const Button = styled.button`
   @media (max-width: 480px) {
     padding: 0.8rem 1.6rem;
     font-size: 1rem;
-    position: absolute;
-    bottom: 5rem;
-    left: 50%;
-    transform: translateX(-50%);
   }
 `;
 
