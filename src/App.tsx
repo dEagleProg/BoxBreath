@@ -350,10 +350,6 @@ function App() {
   const handleContainerClick = () => {
     if (!hasUserInteracted && audioRef.current) {
       setHasUserInteracted(true);
-      audioRef.current.load();
-      audioRef.current.play().catch(error => {
-        console.log("Initial audio play failed:", error);
-      });
     }
   };
 
@@ -366,7 +362,6 @@ function App() {
         if (playPromise !== undefined) {
           playPromise.then(() => {
             if (audioRef.current) {
-              audioRef.current.volume = 0;
               const fadeInInterval = setInterval(() => {
                 if (audioRef.current && audioRef.current.volume < volume) {
                   audioRef.current.volume = Math.min(audioRef.current.volume + 0.1, volume);
@@ -395,7 +390,7 @@ function App() {
         }, 100);
       }
     }
-  }, [preparationStage, hasUserInteracted]);
+  }, [preparationStage, hasUserInteracted, volume]);
 
   useEffect(() => {
     if (audioRef.current && preparationStage === 'running') {
@@ -452,6 +447,10 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
