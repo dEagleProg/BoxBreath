@@ -350,6 +350,10 @@ function App() {
   const handleContainerClick = () => {
     if (!hasUserInteracted && audioRef.current) {
       setHasUserInteracted(true);
+      audioRef.current.load();
+      audioRef.current.play().catch(error => {
+        console.log("Initial audio play failed:", error);
+      });
     }
   };
 
@@ -491,6 +495,7 @@ function App() {
         loop
         src="/music.mp3"
         preload="auto"
+        playsInline
       />
       <AudioControls>
         <AudioControl onClick={toggleMute} type="button">
