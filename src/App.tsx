@@ -45,7 +45,7 @@ const fadeOut = keyframes`
 `;
 
 const PreparationText = styled.div`
-  font-size: min(1.5rem, 4vw);
+  font-size: min(2rem, 5vw);
   font-weight: bold;
   color: white;
   text-align: center;
@@ -162,7 +162,7 @@ const Dot = styled.div<{ phase: number }>`
 const Timer = styled.div`
   font-size: ${props => {
     if (typeof props.children === 'object') {
-      return 'min(1.5rem, 4vw)';
+      return 'min(2.5rem, 6vw)';
     }
     return 'min(6rem, 15vw)';
   }};
