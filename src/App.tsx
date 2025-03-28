@@ -11,6 +11,7 @@ const AppContainer = styled.div`
   color: white;
   font-family: 'Arial', sans-serif;
   padding: 1rem;
+  touch-action: manipulation;
 `;
 
 const moveTopToRight = keyframes`
@@ -357,11 +358,19 @@ function App() {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const handleContainerClick = () => {
+    if (!hasUserInteracted && audioRef.current) {
+      setHasUserInteracted(true);
+      audioRef.current.play().catch(error => {
+        console.log("Initial audio play failed:", error);
+      });
+    }
+  };
+
   useEffect(() => {
     if (preparationStage === 'running' && hasUserInteracted) {
       if (audioRef.current) {
         audioRef.current.volume = 0;
-        audioRef.current.currentTime = 0;
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.then(() => {
@@ -389,7 +398,6 @@ function App() {
             clearInterval(fadeOutInterval);
             if (audioRef.current) {
               audioRef.current.pause();
-              audioRef.current.currentTime = 0;
             }
           }
         }, 100);
@@ -489,11 +497,12 @@ function App() {
   };
 
   return (
-    <AppContainer>
+    <AppContainer onClick={handleContainerClick}>
       <audio
         ref={audioRef}
         loop
         src="/ambient.mp3"
+        preload="auto"
       />
       <AudioControls>
         <AudioControl onClick={toggleMute} type="button">
