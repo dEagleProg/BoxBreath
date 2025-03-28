@@ -434,6 +434,10 @@ function App() {
       setCurrentPhase(0);
       setKey(0);
     } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
       setPreparationStage('initial');
       setIsRunning(false);
       setCountdownNumber(3);
