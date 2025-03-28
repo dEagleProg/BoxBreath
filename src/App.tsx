@@ -350,14 +350,11 @@ function App() {
   const handleContainerClick = () => {
     if (!hasUserInteracted && audioRef.current) {
       setHasUserInteracted(true);
-      audioRef.current.play().catch(error => {
-        console.log("Initial audio play failed:", error);
-      });
     }
   };
 
   useEffect(() => {
-    if (preparationStage === 'running' && hasUserInteracted) {
+    if (preparationStage === 'countdown' && hasUserInteracted) {
       if (audioRef.current) {
         audioRef.current.volume = 0;
         audioRef.current.currentTime = 0;
@@ -379,7 +376,7 @@ function App() {
           });
         }
       }
-    } else if (preparationStage !== 'countdown') {
+    } else if (preparationStage === 'initial') {
       if (audioRef.current) {
         const fadeOutInterval = setInterval(() => {
           if (audioRef.current && audioRef.current.volume > 0) {
@@ -492,7 +489,7 @@ function App() {
       <audio
         ref={audioRef}
         loop
-        src="/ambient.mp3"
+        src="/music.mp3"
         preload="auto"
       />
       <AudioControls>
