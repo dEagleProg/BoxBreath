@@ -354,10 +354,11 @@ function App() {
   const [countdownNumber, setCountdownNumber] = useState(3);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    if (preparationStage === 'running') {
+    if (preparationStage === 'running' && hasUserInteracted) {
       if (audioRef.current) {
         audioRef.current.volume = 0;
         audioRef.current.currentTime = 0;
@@ -394,7 +395,7 @@ function App() {
         }, 100);
       }
     }
-  }, [preparationStage]);
+  }, [preparationStage, hasUserInteracted]);
 
   useEffect(() => {
     if (audioRef.current && preparationStage === 'running') {
@@ -442,6 +443,9 @@ function App() {
   }, [preparationStage]);
 
   const toggleBreathing = () => {
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
     if (preparationStage === 'initial') {
       setPreparationStage('preparing');
       setTimer(PHASE_DURATION);
